@@ -22,7 +22,10 @@
 # virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml
 hs_err_pid*
 
-# idea产生文件及文件夹
+# idea浜х敓鏂囦欢
 .idea/
 target/
 *.iml
+
+# 杩愯浜х敓鏂囦欢
+upload-dir/

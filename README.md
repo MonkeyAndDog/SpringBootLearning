@@ -137,3 +137,107 @@ public class Application {
 }
 ```
 
+文件上传
+---
+首先配置服务器信息，然后创建处理储存逻辑的服务，然后创建控制器。
+
+1. 启动类注解`@EnableConfigurationProperties(StorageProperties.class)`，并且相关的配置类注解`@ConfigurationProperties("storage")`;
+2. 表单使用`enctype="multipart/form-data"`不变，后台使用控制器接收相关请求，控制器中使用相关的`Service`对象处理储存逻辑。
+
+控制器示例：
+```java
+package hello;
+
+import hello.storage.StorageService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.multipart.MultipartFile;
+
+@Controller
+public class FileUploadController {
+
+    private StorageService storageService;
+
+    @Autowired
+    public FileUploadController(StorageService storageService) {
+        this.storageService = storageService;
+    }
+
+    @RequestMapping("/upload")
+    @ResponseBody
+    public String handleFileUpload(@RequestParam("file") MultipartFile file) {
+        storageService.store(file);
+        System.out.println("666");
+        return "上传文件成功";
+    }
+
+    @RequestMapping("/")
+    public String home() {
+        return "uploadForm";
+    }
+}
+```
+
+文件储存`Service`示例
+---
+```java
+package hello.storage;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.util.FileSystemUtils;
+import org.springframework.util.StringUtils;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
+
+@Service
+public class FileSystemStorageService implements StorageService {
+
+    private Path rootLocation;
+
+    @Autowired
+    public FileSystemStorageService(StorageProperties properties) {
+        this.rootLocation = Paths.get(properties.getLocation());
+    }
+
+    @Override
+    public void init() {
+        try {
+            Files.createDirectories(rootLocation);
+        } catch(IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Override
+    public void store(MultipartFile file) {
+        String filename = StringUtils.cleanPath(file.getOriginalFilename());
+        try {
+            InputStream inputStream = file.getInputStream();
+            Files.copy(inputStream, this.rootLocation.resolve(filename), StandardCopyOption.REPLACE_EXISTING);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Override
+    public void deleteAll() {
+        FileSystemUtils.deleteRecursively(rootLocation.toFile());
+    }
+}
+```
+
+
+
+
+
+
