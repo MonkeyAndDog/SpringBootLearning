@@ -137,6 +137,70 @@ public class Application {
 }
 ```
 
+使用JDBC访问数据库
+---
+使用JDBCTemplate接口访问数据库，并执行SQL语句。
+
+JDBCTemplate封装了对数据库的连接和处理SQL的接口，更易使用。
+
+使用CrudRepository接口对数据库进行操作
+---
+创建model类的相关服务接口并实现`CrudRepository`接口(同时Spring会默认注入一些方法的实现)
+然后直接在控制器中使用该model类的服务接口。
+
+服务接口示例：
+```java
+package hello;
+
+import org.springframework.data.repository.CrudRepository;
+import org.springframework.stereotype.Component;
+
+@Component
+public interface UserRepository extends CrudRepository<User, Long> {
+
+}
+```
+服务接口调用示例（使用了自动装配）:
+```java
+package hello;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
+
+@Controller
+@RequestMapping("/demo")
+public class MainController {
+
+    private UserRepository userRepository;
+
+    @RequestMapping("/add")
+    public @ResponseBody String addNewUser(@RequestParam String name, @RequestParam String email) {
+        User user = new User();
+        user.setEmail(email);
+        user.setName(name);
+        userRepository.save(user);
+        return "储存成功";
+    }
+
+    @RequestMapping(path="/all")
+    public @ResponseBody Iterable<User> getAllUsers() {
+        return userRepository.findAll();
+    }
+
+    public UserRepository getUserRepository() {
+        return userRepository;
+    }
+
+    @Autowired
+    public void setUserRepository(UserRepository userRepository) {
+        this.userRepository = userRepository;
+    }
+}
+```
+
 文件上传
 ---
 首先配置服务器信息，然后创建处理储存逻辑的服务，然后创建控制器。
@@ -182,7 +246,6 @@ public class FileUploadController {
 ```
 
 文件储存`Service`示例
----
 ```java
 package hello.storage;
 
@@ -235,6 +298,8 @@ public class FileSystemStorageService implements StorageService {
     }
 }
 ```
+
+
 
 
 
