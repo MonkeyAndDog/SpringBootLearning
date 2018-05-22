@@ -353,3 +353,14 @@ public class PersonForm {
 }
 ```
 然后在`BindingResult`接口中获取相应的错误内容。
+
+使用Spring Boot Actuator监控程序
+---
+添加依赖：
+```xml
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-actuator</artifactId>
+</dependency>
+```
+[更加详细的配置说明](https://segmentfault.com/a/1190000004309751)
